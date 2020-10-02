@@ -5,10 +5,19 @@ import db from "./firebase";
 import { Link } from "react-router-dom";
 
 export default function SidebarChat({ addNewChat, id, name }) {
-  const [seed, setseed] = useState(123);
+  const [message, setmessage] = useState([]);
 
   useEffect(() => {
-    setseed(Math.random() * 100 + 12);
+    console.log(id);
+    if (id) {
+      db.collection("rooms")
+        .doc(id)
+        .collection("messages")
+        .orderBy("timestamp", "desc")
+        .onSnapshot((snapshot) =>
+          setmessage(snapshot.docs.map((doc) => doc.data()))
+        );
+    }
   }, []);
 
   const createChat = () => {
@@ -25,10 +34,14 @@ export default function SidebarChat({ addNewChat, id, name }) {
   return !addNewChat ? (
     <Link to={`/room/${id}`}>
       <div className="sidebarchat">
-        <Avatar src={`https://avatars.dicebear.com/api/human/${seed}.svg`} />
+        <Avatar
+          src={`https://avatars.dicebear.com/api/human/${
+            Math.random() * 100 + 12
+          }.svg`}
+        />
         <div className="sidebar__chat__info">
           <h2>{name} </h2>
-          <p>last message...</p>
+          <p>{message[0]?.message}</p>
         </div>
       </div>
     </Link>
